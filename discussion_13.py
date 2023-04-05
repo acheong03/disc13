@@ -16,31 +16,52 @@ def setUpDatabase(db_name):
 # TASK 1
 # CREATE TABLE FOR EMPLOYEE INFORMATION IN DATABASE AND ADD INFORMATION
 def create_employee_table(cur, conn):
-    pass
+    cur.execute('DROP TABLE IF EXISTS employees')
+    cur.execute('CREATE TABLE employees (employee_id INTEGER PRIMARY KEY, first_name TEXT, last_name TEXT, email TEXT, phone_number TEXT, hire_date TEXT, job_id TEXT, salary INTEGER, commission_pct INTEGER, manager_id INTEGER, department_id INTEGER)')
 
 # ADD EMPLOYEE'S INFORMTION TO THE TABLE
 
 def add_employee(filename, cur, conn):
     #load .json file and read job data
+    with open(filename, 'r') as f:
+        data = json.load(f)
     # WE GAVE YOU THIS TO READ IN DATA
     f = open(os.path.abspath(os.path.join(os.path.dirname(__file__), filename)))
     file_data = f.read()
     f.close()
     # THE REST IS UP TO YOU
-    pass
 
 # TASK 2: GET JOB AND HIRE_DATE INFORMATION
 def job_and_hire_date(cur, conn):
-    pass
+    cur.execute('SELECT job_id, hire_date FROM employees')
+    rows = cur.fetchall()
+    job_hire_dict = {}
+    for row in rows:
+        if row[0] in job_hire_dict:
+            job_hire_dict[row[0]].append(row[1])
+        else:
+            job_hire_dict[row[0]] = [row[1]]
+    job_hire_list = []
+    for job, hires in job_hire_dict.items():
+        job_hire_list.append((job, min(hires)))
+    return job_hire_list
+
 
 # TASK 3: IDENTIFY PROBLEMATIC SALARY DATA
 # Apply JOIN clause to match individual employees
 def problematic_salary(cur, conn):
-    pass
+    cur.execute('SELECT e.first_name, e.last_name FROM employees e JOIN employees m ON e.manager_id = m.employee_id WHERE e.salary > m.salary')
+    return cur.fetchall()
 
 # TASK 4: VISUALIZATION
 def visualization_salary_data(cur, conn):
-    pass
+    cur.execute('SELECT salary FROM employees')
+    salaries = [row[0] for row in cur.fetchall()]
+    plt.hist(salaries, bins=10)
+    plt.xlabel('Salary')
+    plt.ylabel('Count')
+    plt.title('Distribution of Salaries')
+    plt.show()
 
 class TestDiscussion12(unittest.TestCase):
     def setUp(self) -> None:
